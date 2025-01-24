@@ -9,35 +9,40 @@ import {
   StyleSheet,
   Alert,
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker'; // Import Picker
+import { Picker } from '@react-native-picker/picker';
 
 export default function App() {
   const [expenses, setExpenses] = useState([]);
   const [expenseName, setExpenseName] = useState('');
   const [expenseAmount, setExpenseAmount] = useState('');
   const [expenseCategory, setExpenseCategory] = useState('');
-
-  // Default categories
-  const categories = [
+  const [categories, setCategories] = useState([
     'Food',
     'Transport',
     'Entertainment',
     'Bills',
     'Shopping',
     'Healthcare',
-  ];
+  ]);
+  const [newCategory, setNewCategory] = useState('');
 
   // Add a new expense
   const addExpense = () => {
-    if (!expenseName || !expenseAmount || !expenseCategory) {
-      Alert.alert('Error', 'Please enter name, amount, and category.');
+    if (!expenseName.trim() || !expenseAmount.trim() || !expenseCategory) {
+      Alert.alert('Error', 'Please enter a valid name, amount, and category.');
+      return;
+    }
+
+    const amount = parseFloat(expenseAmount);
+    if (isNaN(amount) || amount <= 0) {
+      Alert.alert('Error', 'Please enter a valid amount.');
       return;
     }
 
     const newExpense = {
       id: Math.random().toString(),
-      name: expenseName,
-      amount: parseFloat(expenseAmount),
+      name: expenseName.trim(),
+      amount: amount,
       category: expenseCategory,
     };
 
@@ -45,6 +50,22 @@ export default function App() {
     setExpenseName('');
     setExpenseAmount('');
     setExpenseCategory('');
+  };
+
+  // Add a custom category
+  const addCategory = () => {
+    if (!newCategory.trim()) {
+      Alert.alert('Error', 'Category name cannot be empty.');
+      return;
+    }
+    if (categories.includes(newCategory.trim())) {
+      Alert.alert('Error', 'This category already exists.');
+      return;
+    }
+
+    setCategories((prevCategories) => [...prevCategories, newCategory.trim()]);
+    setNewCategory('');
+    Alert.alert('Success', `Category "${newCategory}" added!`);
   };
 
   // Delete an expense
@@ -105,7 +126,7 @@ export default function App() {
           onChangeText={setExpenseAmount}
           keyboardType="numeric"
         />
-        
+
         {/* Category Picker */}
         <Picker
           selectedValue={expenseCategory}
@@ -119,6 +140,17 @@ export default function App() {
         </Picker>
 
         <Button title="Add Expense" onPress={addExpense} />
+      </View>
+
+      {/* Add Custom Category */}
+      <View style={styles.addCategoryContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Add New Category"
+          value={newCategory}
+          onChangeText={setNewCategory}
+        />
+        <Button title="Add Category" onPress={addCategory} />
       </View>
 
       {/* Total Expenses */}
@@ -167,6 +199,10 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     fontSize: 16,
     backgroundColor: '#fff',
+  },
+  addCategoryContainer: {
+    marginBottom: 20,
+    marginTop: 10,
   },
   total: {
     fontSize: 20,
